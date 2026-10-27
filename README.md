@@ -33,17 +33,38 @@ cortical regions follow (`ctx-lh-bankssts` … `ctx-rh-insula`).
 | `ROBUST` | boolean | `false` | `--robust` | SynthSeg-robust: slower, for clinical / low-quality scans (thick slices, low SNR, poor contrast). Implies SynthSeg's fast mode (no test-time flipping / topology clean-up). |
 | `PARC` | boolean | `false` | `--parc` | Also parcellate the cortex (labels 1000–1035 / 2000–2035, extra volume columns). |
 | `THREADS` | integer | `4` | `--threads` | CPU threads for TensorFlow. |
+| `CROP` | integer | `0` | `--crop` | `0`: whole image. Otherwise a centred patch of `CROP`³ voxels at 1 mm (rounded up to a multiple of 32) is segmented and the rest labelled background; bounds memory and time (see Runtime). |
 
-`--cpu` and `--noaddctab` (plain NIfTI, no embedded colour table) are always passed.
+`--cpu` and `--noaddctab` (plain NIfTI, no embedded colour table) are always passed, and
+`--autocrop` (drop the all-zero margin) when `CROP` is 0.
 
 ## Runtime
 
-`computeTypes: [standard]`, 4 vCPU / 16 GiB, 1 h timeout. On the platform (amd64, no
-emulation) SynthSeg 2.0 takes roughly 1–3 min per 1 mm whole-head scan on 4 threads, with a
-peak of a few GB of RAM; `ROBUST=true` is slower. The image is ~2.3 GB (TensorFlow 2.13 CPU
-+ 370 MB of weights). Each subject runs in its own `mri_synthseg` process; a subject that
-fails is logged and skipped, and the run only fails when every subject failed (or no T1w
-was found).
+`computeTypes: [standard]`, 4 vCPU / 30 GiB, 1 h timeout. Each subject runs in its own
+`mri_synthseg` process; a subject that fails is logged and skipped, and the run only fails
+when every subject failed (or no T1w was found). The image is ~760 MB as Docker reports it
+(TensorFlow 2.13 CPU + 370 MB of weights).
+
+**Memory.** SynthSeg's 3D U-Net runs on the whole 1 mm volume at once, so peak memory grows
+with the number of voxels it segments (about 1–1.4 KB per voxel for the network, on top of
+~6 GB that the full-size post-processing needs). Measured on the ds000117 `sub-01`
+1 mm MPRAGE (192×256×256 = 12.6 M voxels), TensorFlow 2.13 CPU, oneDNN off, 4 threads,
+cgroup peak:
+
+| `CROP` | voxels segmented | peak memory | wall time (amd64 emulated on an M-series Mac) |
+|---|---|---|---|
+| 128 | 2.1 M | 5.8 GB | 53 s |
+| 160 | 4.1 M | 5.9 GB | 65 s |
+| 192 | 7.1 M | > 7.3 GB (killed at the 7 GB limit) | — |
+| 0 (whole image) | 12.6 M | not measurable on an 8 GB VM; extrapolates to ~14–19 GB | — |
+
+Hence the 30 GiB task (the largest pairing with 4 vCPU). If the node offers less, set
+`CROP=192` (fits in 16 GiB; covers an adult brain when the head is roughly centred in
+the field of view) or feed the skull-stripped `desc-brain_T1w` from the synthstrip step:
+`--autocrop` then shrinks the volume to the brain's bounding box (~5 M voxels) and whole-
+image segmentation fits comfortably. `ROBUST=true` uses a larger network and needs more.
+Enabling oneDNN (`TF_ENABLE_ONEDNN_OPTS=1`) was not faster under emulation and is known to
+need several times the memory, so the image leaves it off.
 
 ## Label values
 

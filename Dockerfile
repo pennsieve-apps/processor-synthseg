@@ -5,7 +5,7 @@
 # Weights: the four SynthSeg 2.0 models are fetched at build time from FreeSurfer's public
 # git-annex object store (the same files FreeSurfer installs under $FREESURFER_HOME/models),
 # each checked against its SHA-256. Nothing large lives in the repo.
-FROM --platform=linux/amd64 python:3.11-slim-bookworm
+FROM python:3.11-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -20,8 +20,14 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# surfa (imported by mri_synthseg) has Cython extensions and no wheel, so a compiler is
+# needed for the install only.
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && pip install --no-cache-dir -r /tmp/requirements.txt \
+    && apt-get purge -y --auto-remove build-essential \
+    && rm -rf /var/lib/apt/lists/* /tmp/requirements.txt
 
 # The script and its small label tables (from freesurfer/freesurfer tag v8.2.0, mri_synthseg/).
 COPY vendor/synthseg/ /opt/synthseg/

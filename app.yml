@@ -15,7 +15,10 @@ application:
   tags: [neuroimaging, mri, nifti, synthseg, segmentation, freesurfer]
 runtime:
   cpu: 4096
-  memory: 16384
+  # SynthSeg's 3D U-Net holds the whole 1 mm volume in memory: measured ~6 GB at a 160^3
+  # patch and >7.3 GB at 192^3; a 192x256x256 whole-head scan extrapolates to ~14-19 GB,
+  # so 16 GB is not enough for whole-image segmentation (set CROP=192 if memory is cut).
+  memory: 30720
   computeTypes: [standard]
   timeoutSeconds: 3600
 parameters:
@@ -37,6 +40,15 @@ parameters:
     type: integer
     description: Number of CPU threads TensorFlow may use (--threads).
     defaultValue: 4
+  - name: CROP
+    type: integer
+    description: >-
+      0 (default): segment the whole image (minus any all-zero margin). Otherwise only a
+      centred patch of CROP x CROP x CROP voxels at 1 mm is segmented (--crop; rounded up
+      to a multiple of 32), which bounds memory and time on large fields of view; 192
+      covers an adult brain when the head is roughly centred. Everything outside the
+      patch is labelled background.
+    defaultValue: 0
 inputs:
   - name: image
     description: >-

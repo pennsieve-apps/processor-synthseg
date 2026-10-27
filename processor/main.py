@@ -10,7 +10,8 @@ Outputs:        labels/<sub>_dseg.nii.gz         FreeSurfer-labelled segmentatio
                 volumes/<sub>_volumes.csv        SynthSeg --vol table, header + one row (mm3)
                 volumes/volumes.csv              the same for every subject, one row each
                 qc/<sub>_qc.csv                  SynthSeg --qc table, header + one row
-Parameters:     ROBUST (bool), PARC (bool), THREADS (int); --cpu is always passed.
+Parameters:     ROBUST (bool), PARC (bool), THREADS (int), CROP (int, 0 = whole image);
+                --cpu and --noaddctab are always passed, and --autocrop when CROP is 0.
 """
 from __future__ import annotations
 
@@ -55,12 +56,12 @@ def env_bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in ("1", "true", "yes", "y", "on")
 
 
-def env_int(name: str, default: int) -> int:
+def env_int(name: str, default: int, minimum: int = 1) -> int:
     value = os.environ.get(name)
     if value is None or value.strip() == "":
         return default
     try:
-        return max(1, int(float(value)))
+        return max(minimum, int(float(value)))
     except ValueError:
         log.warning("%s=%r is not an integer, using %d", name, value, default)
         return default
@@ -108,6 +109,14 @@ def run_subject(subject: str, image: Path, out: dict[str, Path], params: dict, w
         # Plain NIfTI through nibabel; no embedded FreeSurfer colour table.
         "--noaddctab",
     ]
+    if params["CROP"] > 0:
+        # A centred patch of CROP^3 voxels at 1 mm (SynthSeg rounds up to a multiple of 32);
+        # the label map is still written at the full input size.
+        cmd += ["--crop", str(params["CROP"])]
+    else:
+        # Drop the all-zero margin (a skull-stripped input shrinks to its brain box, a
+        # whole-head scan is left as is), which is what bounds memory and time.
+        cmd.append("--autocrop")
     if params["ROBUST"]:
         cmd.append("--robust")
     if params["PARC"]:
@@ -175,6 +184,7 @@ def main() -> int:
         "ROBUST": env_bool("ROBUST", False),
         "PARC": env_bool("PARC", False),
         "THREADS": env_int("THREADS", 4),
+        "CROP": env_int("CROP", 0, minimum=0),
     }
     out = {name: output_dir_for(output_dir, OUTPUTS, name) for name in OUTPUTS}
     log.info("%s %s: %s %s; parameters %s", APP, app_version(), TOOL, TOOL_VERSION, params)
