@@ -1,0 +1,65 @@
+cff-version: "1.2.0"
+message: If you use this app, please cite it and the works it builds on, listed under references.
+type: software
+title: SynthSeg Brain Segmentation
+abstract: Whole-brain segmentation of T1-weighted MRI with SynthSeg 2.0, which works on scans of any contrast
+  and resolution. Writes a FreeSurfer-labelled segmentation, per-subject and cohort volume tables and
+  automated QC scores.
+authors:
+- name: Pennsieve (University of Pennsylvania)
+repository-code: https://github.com/pennsieve-apps/processor-synthseg
+license: Apache-2.0
+keywords:
+- neuroimaging
+- mri
+- nifti
+- synthseg
+- segmentation
+- freesurfer
+references:
+- type: article
+  title: 'SynthSeg: Segmentation of brain MRI scans of any contrast and resolution without retraining'
+  authors:
+  - family-names: Billot
+    given-names: Benjamin
+  - family-names: Greve
+    given-names: Douglas N.
+  - family-names: Puonti
+    given-names: Oula
+  - family-names: Thielscher
+    given-names: Axel
+  - family-names: Van Leemput
+    given-names: Koen
+  - family-names: Fischl
+    given-names: Bruce
+  - family-names: Dalca
+    given-names: Adrian V.
+  - family-names: Iglesias
+    given-names: Juan Eugenio
+  year: 2023
+  journal: Medical Image Analysis
+  volume: 86
+  start: '102789'
+  doi: 10.1016/j.media.2023.102789
+- type: article
+  title: Robust machine learning segmentation for large-scale analysis of heterogeneous clinical brain
+    MRI datasets
+  authors:
+  - family-names: Billot
+    given-names: Benjamin
+  - family-names: Magdamo
+    given-names: Colin
+  - family-names: Cheng
+    given-names: You
+  - family-names: Arnold
+    given-names: Steven E.
+  - family-names: Das
+    given-names: Sudeshna
+  - family-names: Iglesias
+    given-names: Juan Eugenio
+  year: 2023
+  journal: Proceedings of the National Academy of Sciences
+  volume: 120
+  issue: '9'
+  start: e2216399120
+  doi: 10.1073/pnas.2216399120
