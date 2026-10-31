@@ -75,3 +75,14 @@ outputs:
       qc/<sub>_qc.csv: SynthSeg's --qc table (predicted Dice-like quality score in
       [0, 1] per structure group; values under ~0.65 flag a likely failed region).
     mediaTypes: [text/csv]
+
+# How a release is tested before it is made public: the inputs a review run uses.
+# See app-deploy-service docs/app-manifest-review.md.
+review:
+  version: 1
+  inputs:
+    image:
+      dataset:
+        doi: 10.18112/openneuro.ds000117.v2.0.0
+        files:
+          - sub-01/ses-mri/anat/sub-01_ses-mri_T1w.nii.gz
