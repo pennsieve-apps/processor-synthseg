@@ -1,5 +1,6 @@
 cff-version: "1.2.0"
-message: If you use this app, please cite it and the works it builds on, listed under references.
+message: >-
+  If you use this app, please cite the work it implements (preferred-citation), this release, and Pennsieve (RRID:SCR_021677); the other works it builds on are listed under references.
 type: software
 title: SynthSeg Brain Segmentation
 abstract: Whole-brain segmentation of T1-weighted MRI with SynthSeg 2.0, which works on scans of any contrast
@@ -16,6 +17,32 @@ keywords:
 - synthseg
 - segmentation
 - freesurfer
+# The work this app implements; the release report's "How to cite" puts it first.
+preferred-citation:
+  type: article
+  title: 'SynthSeg: Segmentation of brain MRI scans of any contrast and resolution without retraining'
+  authors:
+  - family-names: Billot
+    given-names: Benjamin
+  - family-names: Greve
+    given-names: Douglas N.
+  - family-names: Puonti
+    given-names: Oula
+  - family-names: Thielscher
+    given-names: Axel
+  - family-names: Van Leemput
+    given-names: Koen
+  - family-names: Fischl
+    given-names: Bruce
+  - family-names: Dalca
+    given-names: Adrian V.
+  - family-names: Iglesias
+    given-names: Juan Eugenio
+  year: 2023
+  journal: Medical Image Analysis
+  volume: 86
+  start: '102789'
+  doi: 10.1016/j.media.2023.102789
 references:
 - type: article
   title: 'SynthSeg: Segmentation of brain MRI scans of any contrast and resolution without retraining'
