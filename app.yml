@@ -82,6 +82,7 @@ review:
   version: 1
   inputs:
     image:
+      filePaths: source  # keep the dataset's BIDS folders
       dataset:
         doi: 10.18112/openneuro.ds000117.v2.0.0
         files:
